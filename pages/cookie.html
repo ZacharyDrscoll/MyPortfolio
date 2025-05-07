@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link favicon="cookie" href="../images/cookie_PNG13656.png" rel="icon" type="image/png" sizes="16x16"/>
+  <title>Cookie Clicker AI+</title>
+  <style>
+    :root {
+      --bg-color: #f4f4f4;
+      --text-color: #111;
+      --button-bg: #ff3e00;
+      --button-hover: #cc3300;
+      --cookie-shadow: 4px 4px 0 #111;
+    }
+
+    .dark-mode {
+      --bg-color: #0d0d0d;
+      --text-color: #f4f4f4;
+      --button-bg: #ff00cc;
+      --button-hover: #cc0099;
+      --cookie-shadow: 4px 4px 0 #f4f4f4;
+    }
+
+    h1 {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      text-shadow: 2px 2px var(--button-bg);
+      transform: rotate(-1deg);
+    }
+
+    .upgrade {
+      font-family: monospace;
+      text-transform: uppercase;
+      border: 2px solid var(--text-color);
+      background: none;
+      color: var(--text-color);
+      transition: transform 0.2s;
+    }
+
+    .upgrade:hover {
+      transform: scale(1.05) rotate(-2deg);
+      background: var(--button-bg);
+      color: white;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: all 0.4s ease-in-out;
+    }
+
+    .mode-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--button-bg);
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+
+    .mode-toggle:hover {
+      background: var(--button-hover);
+    }
+
+    .cookie {
+      box-shadow: var(--cookie-shadow);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #252525;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #cookie-count {
+      font-size: 2rem;
+      margin: 20px;
+    }
+
+    .cookie {
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+      background-image: url(../images/cookie_PNG13656.png); /* Replace with your cookie image URL */
+      background-size: cover;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      position: relative;
+    }
+
+    .cookie:active {
+      transform: scale(0.95);
+    }
+
+    .upgrades {
+      margin: 30px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+    }
+
+    .upgrade {
+      padding: 10px;
+      font-size: 1rem;
+      background: #d2691e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .upgrade:hover {
+      background: #a0522d;
+    }
+
+    .particle {
+      position: absolute;
+      color: #000;
+      font-size: 1.2rem;
+      animation: rise 1s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes rise {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-100px) scale(0.5); }
+    }
+  </style>
+</head>
+<body>
+  <button id="modeToggle" class="mode-toggle">🌙 Dark Mode</button>
+
+  <h1>🍪 Cookie Clicker AI+ 🍪</h1>
+  <div id="cookie-count">Cookies: 0</div>
+  <div class="cookie" id="cookie"></div>
+
+  <div class="upgrades">
+    <button class="upgrade" onclick="buyAutoClicker(1, 10)">Buy Slow Auto Clicker (10 cookies)</button>
+    <button class="upgrade" onclick="buyAutoClicker(2, 50)">Buy Medium Auto Clicker (50 cookies)</button>
+    <button class="upgrade" onclick="buyAutoClicker(5, 100)">Buy Fast Auto Clicker (100 cookies)</button>
+  </div>
+
+  <audio id="clickSound" src="" preload="auto"></audio> Replace with your sound file URL
+
+  <script>
+    let cookieCount = 0;
+    let cookiesPerSecond = 0;
+    const clickSound = document.getElementById("clickSound");
+    const countDisplay = document.getElementById("cookie-count");
+    const cookie = document.getElementById("cookie");
+  
+    const shopItems = [
+      { name: "Grandma",     basePrice: 10,  value: .1,  owned: 0 },
+      { name: "Bakery",      basePrice: 100, value: 1,  owned: 0 },
+      { name: "Factory",     basePrice: 500, value: 5, owned: 0 },
+      { name: "Portal",      basePrice: 1000,value: 25, owned: 0 },
+      { name: "Cookie Planet", basePrice: 5000,value: 100, owned: 0 },
+      { name: "Cookie Universe", basePrice: 50000,value: 1000, owned: 0 },
+    ];
+  
+    // Update display
+    function updateDisplay() {
+      countDisplay.textContent = `Cookies: ${Math.floor(cookieCount)} 🍪`;
+      renderShop();
+    }
+  
+    // Click event
+    cookie.addEventListener("click", () => {
+      cookieCount++;
+      updateDisplay();
+      clickSound.currentTime = 0;
+      clickSound.play();
+      createParticle("+1");
+    });
+  
+    // Generate passive cookies
+    setInterval(() => {
+      cookieCount += cookiesPerSecond;
+      updateDisplay();
+    }, 1000);
+  
+    // Particle animation
+    function createParticle(text) {
+      const particle = document.createElement("div");
+      particle.className = "particle";
+      particle.textContent = text;
+      const x = cookie.offsetLeft + 100 + (Math.random() * 40 - 20);
+      const y = cookie.offsetTop + 80;
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
+      document.body.appendChild(particle);
+      setTimeout(() => particle.remove(), 1000);
+    }
+  
+    // Calculate next price
+    function getPrice(item) {
+      return Math.floor(item.basePrice * Math.pow(1.15, item.owned));
+    }
+  
+    // Buy item
+    function buyItem(index) {
+      const item = shopItems[index];
+      const price = getPrice(item);
+      if (cookieCount >= price) {
+        cookieCount -= price;
+        item.owned++;
+        cookiesPerSecond += item.value;
+        updateDisplay();
+      } else {
+        alert("Not enough cookies!");
+      }
+    }
+  
+    // Render shop items
+    function renderShop() {
+      const container = document.querySelector(".upgrades");
+      container.innerHTML = "";
+      shopItems.forEach((item, index) => {
+        const price = getPrice(item);
+        const btn = document.createElement("button");
+        btn.className = "upgrade";
+        btn.textContent = `${item.name} (${item.owned}) — ${price} 🍪 [ +${item.value}/sec ]`;
+        btn.onclick = () => buyItem(index);
+        container.appendChild(btn);
+      });
+    }
+    const toggleBtn = document.getElementById("modeToggle");
+    let dark = false;
+
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      dark = !dark;
+      toggleBtn.textContent = dark ? "☀️ Light Mode" : "🌙 Dark Mode";
+    });
+  
+    updateDisplay();
+  </script>
+  
+</body>
+</html>
